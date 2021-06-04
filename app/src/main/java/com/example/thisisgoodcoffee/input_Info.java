@@ -1,10 +1,13 @@
 package com.example.thisisgoodcoffee;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,7 +19,11 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 public class input_Info extends Activity {
+
     final int GET_GALLERY_IMAGE = 200;
     ImageView img;
     myDBHelper myHelper;
@@ -54,13 +61,20 @@ public class input_Info extends Activity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sqlDB = myHelper.getWritableDatabase();
-                String str = "INSERT INTO artistTBL VALUES (" + edtName.getText().toString() + "," +
-                        edtDate.getText().toString() + "," + edtLocate.getText().toString() + "," +
-                        edtTaste.getText().toString() + "," + edtCom.getText().toString() + ","+ imgURI+ ");" ;
+                //sqlDB = myHelper.getWritableDatabase();
 
-                sqlDB.execSQL(str);
-                sqlDB.close();
+               // String str = "INSERT INTO CoffeeTBL VALUES (" + edtName.getText().toString() + "," +
+               //         edtDate.getText().toString() + "," + edtLocate.getText().toString() + "," +
+                //        edtTaste.getText().toString() + "," + edtCom.getText().toString() + ","+ imgURI+ ");" ;
+
+
+                //String str= "INSERT INTO artistTBL VALUES ( '"+ edtName.getText().toString() + "' , '"+ edtDate.getText().toString() + "' );" ;
+                //sqlDB.execSQL(str);
+
+                myHelper.addCoffee(edtName.getText().toString(),  edtDate.getText().toString(), edtLocate.getText().toString(),edtTaste.getText().toString(), edtCom.getText().toString(),imgURI);
+                //sqlDB.close();
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
                 finish();
             }
         });
@@ -70,14 +84,17 @@ public class input_Info extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == GET_GALLERY_IMAGE && resultCode ==RESULT_OK && data != null && data.getData() !=null){
+        if(requestCode == GET_GALLERY_IMAGE && resultCode ==RESULT_OK && data != null && data.getData() !=null){
             Uri selectedImageUri = data.getData();
             img.setImageURI(selectedImageUri);
 
             // URI 변수저장
             imgURI = selectedImageUri.toString();
+            Toast.makeText(getApplicationContext(),imgURI,Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
 
 

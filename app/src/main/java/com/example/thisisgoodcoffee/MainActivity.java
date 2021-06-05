@@ -1,5 +1,6 @@
 package com.example.thisisgoodcoffee;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -143,9 +147,13 @@ public class MainActivity extends AppCompatActivity {
                         View dialogView = (View) View.inflate(MainActivity.this, R.layout.dialog, null);
                         AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
                         ImageView ivCoffee = (ImageView) dialogView.findViewById(R.id.ivCoffee);
+                        TextView comments = (TextView)dialogView.findViewById(R.id.comments);
 
                         Bitmap bmp = BitmapFactory.decodeFile(ImgUri.get(pos));
                         ivCoffee.setImageBitmap(bmp);
+
+                        comments.setText(strCom.get(pos));
+
                         dlg.setTitle("이름: "+ strName.get(pos) + " | "+ "날짜: "+ strDate.get(pos));
                         dlg.setView(dialogView);
                         dlg.setNegativeButton("닫기", null);
@@ -161,5 +169,31 @@ public class MainActivity extends AppCompatActivity {
 
             return imageView;
         }
+    }
+
+
+    // 옵션 메뉴 생성
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+
+    // 옵션 메뉴 기능 설정
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.resetTBL:
+                myHelper = new myDBHelper(this);
+                myHelper.onUpgrade(sqlDB, 1, 2);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
+        }
+        return false;
     }
 }

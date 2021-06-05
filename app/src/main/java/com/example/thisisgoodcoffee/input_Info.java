@@ -47,7 +47,7 @@ public class input_Info extends Activity {
         EditText edtLocate = (EditText) findViewById(R.id.edtLocate);
         EditText edtTaste = (EditText) findViewById(R.id.edtTaste);
         EditText edtCom = (EditText) findViewById(R.id.comments);
-
+        img.setImageResource(R.drawable.ic_img);
 
         // DB 객체 만들기!
         myHelper = new myDBHelper(this);

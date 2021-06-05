@@ -119,9 +119,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View view, ViewGroup viewGroup) {
             imageView = new ImageView(context);
-            imageView.setLayoutParams(new GridView.LayoutParams(200, 300));
+            imageView.setLayoutParams(new GridView.LayoutParams(280, 420));
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             imageView.setPadding(5, 5, 5, 5);
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             boolean addflag;
 
             final int pos = position;

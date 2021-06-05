@@ -51,7 +51,10 @@ public class input_Info extends Activity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
+                //intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
+                //intent.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(intent,GET_GALLERY_IMAGE);
             }
         });
@@ -85,12 +88,25 @@ public class input_Info extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == GET_GALLERY_IMAGE && resultCode ==RESULT_OK && data != null && data.getData() !=null){
-            Uri selectedImageUri = data.getData();
-            img.setImageURI(selectedImageUri);
+            //Uri selectedImageUri = data.getData();
+           // img.setImageURI(selectedImageUri);
 
             // URI 변수저장
-            imgURI = selectedImageUri.toString();
-            Toast.makeText(getApplicationContext(),imgURI,Toast.LENGTH_SHORT).show();
+            //imgURI = selectedImageUri.toString();
+           // Toast.makeText(getApplicationContext(),imgURI,Toast.LENGTH_SHORT).show();
+
+            try{
+                InputStream in = getContentResolver().openInputStream(data.getData());
+                Bitmap bmp = BitmapFactory.decodeStream(in);
+                //Toast.makeText(getApplicationContext(),data.getData().getClass().getName(),Toast.LENGTH_SHORT ).show();
+                in.close();
+                imgURI = data.getData().toString();
+                img.setImageBitmap(bmp);
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+
         }
     }
 

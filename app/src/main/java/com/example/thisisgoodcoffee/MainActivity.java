@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 차수 구하기
 
-        //cursor = sqlDB.rawQuery("SELECT count(*) FROM CoffeeTBL;", null);
+        cursor = sqlDB.rawQuery("SELECT count(*) FROM CoffeeTBL;", null);
         // DB 데이터 가져오기
         cursor = sqlDB.rawQuery("SELECT * FROM CoffeeTBL;", null);
         dbRows = cursor.getCount();
@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
     public class MyGridAdapter extends BaseAdapter {
         Context context;
         ImageView imageView;
+
+
         public MyGridAdapter(Context c) {
             context = c;
         }
@@ -107,17 +109,39 @@ public class MainActivity extends AppCompatActivity {
             imageView.setPadding(5, 5, 5, 5);
             boolean addflag;
 
-
             final int pos = position;
-            if(pos < dbRows) {
+
+                // 문제의 코그
+                //Toast.makeText(getApplicationContext(),strImgUri.get(pos),Toast.LENGTH_SHORT).show();
+
+
+                // ------------불러온 Uri 변환-----------------------------------
+
+
+            //if(getImageBmp(imgLoc) !=null)
+            //    bmp =  getImageBmp(imgLoc);
+
+            // 마지막 더하기 이미지 인가?
+            if (pos < dbRows) {
                 addflag = true;
                 Uri imgLoc = Uri.parse(strImgUri.get(pos));
-                Toast.makeText(getApplicationContext(),strImgUri.get(pos),Toast.LENGTH_SHORT).show();
+
+                try {
+                    InputStream in = getContentResolver().openInputStream(imgLoc);
+                    Bitmap bmp = BitmapFactory.decodeStream(in);
+                    //Toast.makeText(getApplicationContext(),data.getData().getClass().getName(),Toast.LENGTH_SHORT ).show();
+                    in.close();
+                    imageView.setImageBitmap(bmp);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                //Toast.makeText(getApplicationContext(), strImgUri.get(pos), Toast.LENGTH_SHORT).show();
                 // 문제의 코드 ****
-                //imageView.setImageURI(imgLoc);
                 //setImage(imgLoc);
-                imageView.setImageResource(R.drawable.ic_img);
-            }else{
+                //imageView.setImageResource(R.drawable.ic_img);
+
+            } else {
                 addflag = false;
                 imageView.setImageResource(R.drawable.ic_img);
             }
@@ -131,8 +155,7 @@ public class MainActivity extends AppCompatActivity {
                         AlertDialog.Builder dlg = new AlertDialog.Builder(MainActivity.this);
                         ImageView ivCoffee = (ImageView) dialogView.findViewById(R.id.ivCoffee);
 
-                       // ivCoffee.setImageURI(Uri.parse(strImgUri.get(pos)));
-                        ivCoffee.setImageResource(R.drawable.ic_img);
+                       // ivCoffee.setImageBitmap(bmp);
                         dlg.setTitle("Large Mode");
                         dlg.setView(dialogView);
                         dlg.setNegativeButton("닫기", null);
@@ -149,14 +172,15 @@ public class MainActivity extends AppCompatActivity {
             return imageView;
         }
 
-        private void setImage(Uri uri) {
-            try{
+        private Bitmap getImageBmp(Uri uri) {
+            Bitmap bitmap = null;
+            try {
                 InputStream in = getContentResolver().openInputStream(uri);
-                Bitmap bitmap = BitmapFactory.decodeStream(in);
-                imageView.setImageBitmap(bitmap);
-            } catch (FileNotFoundException e){
+                bitmap = BitmapFactory.decodeStream(in);
+            } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            return bitmap;
         }
     }
 }

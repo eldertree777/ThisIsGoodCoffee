@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
@@ -29,55 +32,52 @@ public class input_Info extends Activity {
     myDBHelper myHelper;
     SQLiteDatabase sqlDB;
     String imgURI;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.input_info);
 
 
+        // xml -> java
+        img = (ImageView) findViewById(R.id.imgView);
+        Button btn = (Button) findViewById(R.id.btnstorage);
+        EditText edtName = (EditText) findViewById(R.id.edtName);
+        EditText edtDate = (EditText) findViewById(R.id.edtDate);
+        EditText edtLocate = (EditText) findViewById(R.id.edtLocate);
+        EditText edtTaste = (EditText) findViewById(R.id.edtTaste);
+        EditText edtCom = (EditText) findViewById(R.id.comments);
 
-        img = (ImageView)findViewById(R.id.imgView);
-        Button btn = (Button)findViewById(R.id.btnstorage);
-        EditText edtName = (EditText)findViewById(R.id.edtName);
-        EditText edtDate = (EditText)findViewById(R.id.edtDate);
-        EditText edtLocate = (EditText)findViewById(R.id.edtLocate);
-        EditText edtTaste = (EditText)findViewById(R.id.edtTaste);
-        EditText edtCom = (EditText)findViewById(R.id.comments);
 
+        // DB 객체 만들기!
         myHelper = new myDBHelper(this);
+
 
         // img 불러오는 작업
         img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                //intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,"image/*");
-                //intent.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(intent,GET_GALLERY_IMAGE);
+                startActivityForResult(intent, GET_GALLERY_IMAGE);
             }
         });
 
 
-        // 저장 버튼 입력 DB저장과 finish()
+        // 저장 버튼 입력 DB저장과 finish()  OK!
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //sqlDB = myHelper.getWritableDatabase();
 
-               // String str = "INSERT INTO CoffeeTBL VALUES (" + edtName.getText().toString() + "," +
-               //         edtDate.getText().toString() + "," + edtLocate.getText().toString() + "," +
-                //        edtTaste.getText().toString() + "," + edtCom.getText().toString() + ","+ imgURI+ ");" ;
+                //addCoffee insert 하기!
+                myHelper.addCoffee(edtName.getText().toString(), edtDate.getText().toString(), edtLocate.getText().toString(), edtTaste.getText().toString(), edtCom.getText().toString(), imgURI);
 
 
-                //String str= "INSERT INTO artistTBL VALUES ( '"+ edtName.getText().toString() + "' , '"+ edtDate.getText().toString() + "' );" ;
-                //sqlDB.execSQL(str);
-
-                myHelper.addCoffee(edtName.getText().toString(),  edtDate.getText().toString(), edtLocate.getText().toString(),edtTaste.getText().toString(), edtCom.getText().toString(),imgURI);
-                //sqlDB.close();
+                // 메인 액티비티 다시 불러오기
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
+
+                // 종료
                 finish();
             }
         });
@@ -87,23 +87,20 @@ public class input_Info extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == GET_GALLERY_IMAGE && resultCode ==RESULT_OK && data != null && data.getData() !=null){
-            //Uri selectedImageUri = data.getData();
-           // img.setImageURI(selectedImageUri);
+        if (requestCode == GET_GALLERY_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            try {
 
-            // URI 변수저장
-            //imgURI = selectedImageUri.toString();
-           // Toast.makeText(getApplicationContext(),imgURI,Toast.LENGTH_SHORT).show();
-
-            try{
                 InputStream in = getContentResolver().openInputStream(data.getData());
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                //Toast.makeText(getApplicationContext(),data.getData().getClass().getName(),Toast.LENGTH_SHORT ).show();
                 in.close();
-                imgURI = data.getData().toString();
-                img.setImageBitmap(bmp);
-            }catch(Exception e)
-            {
+
+                String path = getRealPathFromURI(data.getData());
+                Bitmap bitmap = BitmapFactory.decodeFile(path);
+
+                img.setImageBitmap(bitmap);
+                imgURI = path;
+
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -111,7 +108,28 @@ public class input_Info extends Activity {
     }
 
 
-
+    // Uri로 절대 경로값구하기
+    private String getRealPathFromURI(Uri contentUri) {
+        if (contentUri.getPath().startsWith("/storage")) {
+            return contentUri.getPath();
+        }
+        String id = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            id = DocumentsContract.getDocumentId(contentUri).split(":")[1];
+        }
+        String[] columns = {MediaStore.Files.FileColumns.DATA};
+        String selection = MediaStore.Files.FileColumns._ID + " = " + id;
+        Cursor cursor = getContentResolver().query(MediaStore.Files.getContentUri("external"), columns, selection, null, null);
+        try {
+            int columnIndex = cursor.getColumnIndex(columns[0]);
+            if (cursor.moveToFirst()) {
+                return cursor.getString(columnIndex);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
 
 
 

@@ -23,7 +23,7 @@ public class myDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE  CoffeeTBL ( NAME CHAR(50), DATE CHAR(20), locate CHAR(50),taste CHAR(50) ,comment CHAR(200), IMGURI char(500));");
+        db.execSQL("CREATE TABLE  CoffeeTBL ( NAME CHAR(50), DATE CHAR(20), locate CHAR(50),taste CHAR(50) ,comment CHAR(200), IMGURI char(1000));");
     }
 
     @Override
